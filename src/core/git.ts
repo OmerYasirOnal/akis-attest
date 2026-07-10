@@ -17,7 +17,11 @@ export function headSha(cwd: string): string {
 }
 
 export function isDirty(cwd: string): boolean {
-  return git(cwd, 'status', '--porcelain') !== ''
+  // Attest's own .attest/ bookkeeping (config + the append-only ledger, which grows on
+  // every init/verify/approve) must never make the project read as "dirty" — dirtiness
+  // is about the user's CODE state. The delivery gate (and the honesty `dirty` flag
+  // recorded on each event) therefore excludes .attest/ from the working-tree check.
+  return git(cwd, 'status', '--porcelain', '--', '.', ':(exclude).attest') !== ''
 }
 
 export function gitUser(cwd: string): string {

@@ -1,7 +1,7 @@
 import { parseArgs } from 'node:util'
 import { attestDir, loadConfig } from '../core/config.js'
 import { headSha, isDirty } from '../core/git.js'
-import { appendEvent } from '../core/ledger.js'
+import { appendEvent, readLedger } from '../core/ledger.js'
 
 export function runApprove(argv: string[], cwd: string): number {
   const { values, positionals } = parseArgs({
@@ -30,6 +30,27 @@ export function runApprove(argv: string[], cwd: string): number {
     console.log(`plan approved (seq ${event.seq}) — "${values.message}"`)
     return 0
   }
-  console.error('error: delivery gate not implemented yet')
-  return 1
+  // gate === 'delivery' — fail-closed rules (spec §4.1 / §5)
+  if (isDirty(cwd)) {
+    console.error('error: working tree is dirty — commit your changes first')
+    return 1
+  }
+  const sha = headSha(cwd)
+  const events = readLedger(attestDir(cwd))
+  const verifyForHead = [...events]
+    .reverse()
+    .find((e) => e.kind === 'verify' && e.gitSha === sha && e.dirty === false)
+  if (!verifyForHead || verifyForHead.payload.pass !== true) {
+    console.error('error: no passing verify for HEAD — run `attest verify` on a clean tree first')
+    return 1
+  }
+  const event = appendEvent(attestDir(cwd), {
+    kind: 'approve_delivery',
+    gitSha: sha,
+    dirty: false,
+    actor: cfg.actor,
+    payload: { message: values.message, verifySeq: verifyForHead.seq },
+  })
+  console.log(`delivery approved (seq ${event.seq}) — "${values.message}"`)
+  return 0
 }
