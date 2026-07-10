@@ -1,3 +1,5 @@
+import { existsSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { runInit } from '../../src/commands/init.js'
 import { attestDir, loadConfig } from '../../src/core/config.js'
@@ -22,5 +24,17 @@ describe('attest init', () => {
     const repo = fixtureRepo()
     expect(runInit([], repo)).toBe(0)
     expect(runInit([], repo)).toBe(1)
+  })
+  it('cleans up .attest when init fails partway, so retry works', () => {
+    const home = tmpDir()
+    const repo = fixtureRepo()
+    // Make ensureKeyPair fail: point AKIS_ATTEST_HOME at a FILE so mkdir inside it throws
+    const blocker = join(home, 'not-a-dir')
+    writeFileSync(blocker, 'x')
+    process.env.AKIS_ATTEST_HOME = join(blocker, 'nested')
+    expect(runInit([], repo)).toBe(1)
+    expect(existsSync(join(repo, '.attest'))).toBe(false)
+    process.env.AKIS_ATTEST_HOME = tmpDir()
+    expect(runInit([], repo)).toBe(0)
   })
 })

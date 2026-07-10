@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, rmSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { attestDir, saveConfig, type AttestConfig } from '../core/config.js'
@@ -30,14 +30,22 @@ export function runInit(argv: string[], cwd: string): number {
     test: { command: values['test-command'] ?? 'npm test' },
   }
   saveConfig(cwd, cfg)
-  const kp = ensureKeyPair()
-  appendEvent(attestDir(cwd), {
-    kind: 'init',
-    gitSha: headSha(cwd),
-    dirty: isDirty(cwd),
-    actor: cfg.actor,
-    payload: { keyFingerprint: kp.fingerprint, project: cfg.project },
-  })
+  let kp
+  try {
+    kp = ensureKeyPair()
+    appendEvent(attestDir(cwd), {
+      kind: 'init',
+      gitSha: headSha(cwd),
+      dirty: isDirty(cwd),
+      actor: cfg.actor,
+      payload: { keyFingerprint: kp.fingerprint, project: cfg.project },
+    })
+  } catch (err) {
+    rmSync(attestDir(cwd), { recursive: true, force: true })
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(`error: init failed (${message}) — cleaned up .attest, safe to retry`)
+    return 1
+  }
   console.log(`initialized .attest for "${cfg.project}" (key ${kp.fingerprint.slice(0, 16)}…)`)
   return 0
 }
