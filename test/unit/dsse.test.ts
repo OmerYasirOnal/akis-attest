@@ -9,6 +9,13 @@ describe('dsse', () => {
     expect(out).toBe('DSSEv1 1 t 2 pp')
   })
 
+  it('uses byte lengths (not char counts) for multi-byte UTF-8', () => {
+    const type = 'tÿp€' // 4 chars, 7 UTF-8 bytes
+    const payload = new TextEncoder().encode('p€') // 2 chars, 4 bytes
+    const out = new TextDecoder().decode(pae(type, payload))
+    expect(out).toBe('DSSEv1 7 tÿp€ 4 p€')
+  })
+
   it('sign/verify round-trips and detects payload tampering', () => {
     process.env.AKIS_ATTEST_HOME = tmpDir()
     const env = signEnvelope('application/vnd.in-toto+json', new TextEncoder().encode('{"a":1}'))
