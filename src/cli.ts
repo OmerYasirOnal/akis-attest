@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { runApprove } from './commands/approve.js'
 import { runInit } from './commands/init.js'
+import { runVerify } from './commands/verify.js'
 
 const USAGE = `attest — ship AI-built work with proof
 
@@ -19,8 +20,9 @@ export async function main(argv: string[]): Promise<number> {
       return runInit(rest, process.cwd())
     case 'approve':
       return runApprove(rest, process.cwd())
-    // verify / export / check are wired in by later tasks:
-    // case 'verify': return runVerify(rest, process.cwd())
+    case 'verify':
+      return runVerify(rest, process.cwd())
+    // export / check are wired in by later tasks:
     // case 'export': return runExport(rest, process.cwd())
     // case 'check': return runCheck(rest, process.cwd())
     default:
