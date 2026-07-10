@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { runApprove } from './commands/approve.js'
 import { runInit } from './commands/init.js'
 
 const USAGE = `attest — ship AI-built work with proof
@@ -16,8 +17,9 @@ export async function main(argv: string[]): Promise<number> {
   switch (command) {
     case 'init':
       return runInit(rest, process.cwd())
-    // approve / verify / export / check are wired in by later tasks:
-    // case 'approve': return runApprove(rest, process.cwd())
+    case 'approve':
+      return runApprove(rest, process.cwd())
+    // verify / export / check are wired in by later tasks:
     // case 'verify': return runVerify(rest, process.cwd())
     // case 'export': return runExport(rest, process.cwd())
     // case 'check': return runCheck(rest, process.cwd())
