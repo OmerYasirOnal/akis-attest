@@ -18,7 +18,13 @@ afterEach(() => {
 
 export function fixtureRepo(): string {
   const dir = tmpDir()
-  const git = (...args: string[]) => execFileSync('git', args, { cwd: dir, encoding: 'utf8' })
+  const git = (...args: string[]) =>
+    execFileSync('git', args, {
+      cwd: dir,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_SYSTEM: '/dev/null' },
+    })
   git('init', '-b', 'main')
   git('config', 'user.name', 'Fixture')
   git('config', 'user.email', 'fx@test')
