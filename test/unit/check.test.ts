@@ -34,6 +34,16 @@ describe('attest check', () => {
     writeFileSync(path, readFileSync(path, 'utf8').replace('"message":"ship"', '"message":"HACK"'))
     expect(runCheck([path], repo)).toBe(1)
   })
+  it('fails cleanly (no crash) on a crafted/malformed bundle', async () => {
+    const repo = await exportedRepo()
+    const path = join(repo, 'proof.html')
+    const crafted = readFileSync(path, 'utf8').replace(
+      /<script id="attest-bundle" type="application\/json">[\s\S]*?<\/script>/,
+      '<script id="attest-bundle" type="application/json">{"schema":"akis-attest/proof-bundle/v1","ledger":null,"envelope":{"payloadType":"x","payload":"bm90LWpzb24=","signatures":[]}}</script>',
+    )
+    writeFileSync(path, crafted)
+    expect(runCheck([path], repo)).toBe(1)
+  })
   it('fails (exit 1) on a repo without a signature', () => {
     process.env.AKIS_ATTEST_HOME = tmpDir()
     const repo = fixtureRepo()
