@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>akis-attest — akis-attest</title>
+<style>
+:root { color-scheme: light dark; --ok:#1a7f37; --fail:#b91c1c; --warn:#b45309; --muted:#6b7280; }
+body { font: 16px/1.55 system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+.badge { padding: .6rem 1rem; border-radius: .5rem; font-weight: 600; }
+body[data-verify-state="ok"] .badge { background: color-mix(in srgb, var(--ok) 12%, transparent); color: var(--ok); }
+body[data-verify-state="fail"] .badge { background: color-mix(in srgb, var(--fail) 12%, transparent); color: var(--fail); }
+body[data-verify-state="unsupported"] .badge, body[data-verify-state="draft"] .badge { background: color-mix(in srgb, var(--warn) 12%, transparent); color: var(--warn); }
+.draft-banner { position: sticky; top: 0; background: var(--warn); color: white; text-align: center; padding: .4rem; font-weight: 700; }
+table { border-collapse: collapse; width: 100%; } td, th { text-align: left; padding: .3rem .6rem 0; vertical-align: top; }
+code, .mono { font-family: ui-monospace, monospace; font-size: .85em; word-break: break-all; }
+.box { border: 1px solid var(--muted); border-radius: .5rem; padding: .8rem 1rem; margin: 1rem 0; }
+.muted { color: var(--muted); } button { cursor: pointer; }
+</style>
+</head>
+<body data-verify-state="pending">
+
+<header>
+  <button id="lang-toggle">EN / TR</button>
+  <h1>akis-attest — <span data-i18n="title"></span></h1>
+  <p class="badge" id="badge" data-i18n="verifying"></p>
+</header>
+<main>
+  <section><h2 data-i18n="gates"></h2><div id="gates"></div></section>
+  <section><h2 data-i18n="tests"></h2><div id="tests"></div></section>
+  <section><h2 data-i18n="fingerprint"></h2>
+    <p class="mono" id="fingerprint"></p><p class="muted" data-i18n="fingerprintNote"></p></section>
+  <section class="box"><h2 data-i18n="honestyTitle"></h2>
+    <ul><li data-i18n="proves1"></li><li data-i18n="proves2"></li><li data-i18n="proves3"></li></ul>
+    <ul class="muted"><li data-i18n="not1"></li><li data-i18n="not2"></li><li data-i18n="not3"></li></ul></section>
+  <section><h2 data-i18n="checkTitle"></h2><p data-i18n="checkBody"></p>
+    <pre><code>npx akis-attest check proof.html</code></pre></section>
+</main>
+<script id="attest-bundle" type="application/json">{"schema":"akis-attest/proof-bundle/v1","project":"akis-attest","lang":"en","generatedAt":"2026-07-11T00:33:24.284Z","draft":false,"envelope":{"payloadType":"application/vnd.in-toto+json","payload":"eyJfdHlwZSI6Imh0dHBzOi8vaW4tdG90by5pby9TdGF0ZW1lbnQvdjEiLCJwcmVkaWNhdGUiOnsiZ2F0ZXMiOnsiZGVsaXZlcnkiOnsiYWN0b3IiOiLDlm1lciBZYXNpciDDlm5hbCA8ZW5nb21lcnlhc2lyb25hbEBnbWFpbC5jb20+IiwibWVzc2FnZSI6InYwLjEuMCBmaXJzdCBkb2dmb29kIGRlbGl2ZXJ5IChoZWFkIDliOTM3ZDIpOiA0NCB1bml0L2ludGVncmF0aW9uIHRlc3RzIHJlYWxseSByYW4gYW5kIHBhc3NlZCIsInRzIjoiMjAyNi0wNy0xMVQwMDozMzoyNC4yMTdaIn0sInBsYW4iOnsiYWN0b3IiOiLDlm1lciBZYXNpciDDlm5hbCA8ZW5nb21lcnlhc2lyb25hbEBnbWFpbC5jb20+IiwibWVzc2FnZSI6Ik1ldGEtc2hvd2Nhc2U6IGF0dGVzdCB0aGUgYWtpcy1hdHRlc3QgdjAuMS4wIGRlbGl2ZXJ5IHdpdGggaXRzZWxmIOKAlCA2LWNvbW1hbmQgQ0xJLCBoYXNoLWNoYWluZWQgbGVkZ2VyLCBzaWduZWQgRFNTRSBhdHRlc3RhdGlvbiwgc2VsZi12ZXJpZnlpbmcgcHJvb2YgcGFnZSIsInRzIjoiMjAyNi0wNy0xMVQwMDozMzoyMi41NjNaIn0sInZlcmlmeSI6eyJhY3RvciI6IsOWbWVyIFlhc2lyIMOWbmFsIDxlbmdvbWVyeWFzaXJvbmFsQGdtYWlsLmNvbT4iLCJjb21tYW5kIjoicG5wbSB0ZXN0IiwiZHVyYXRpb25NcyI6MTUwNiwiZW52Ijp7ImxvY2tmaWxlU2hhMjU2IjoiODhmYzNkZGE0YzAzYzg1ZjI0MTA0YzgxZmViZGYzNjAyYTBhNzU4MTc4Yzk4ZTJlZjI5NzM5Y2JkZjBiMTEyOCIsIm5vZGUiOiJ2MjYuMC4wIiwicGxhdGZvcm0iOiJkYXJ3aW4ifSwiZXhpdENvZGUiOjAsIm91dHB1dERpZ2VzdCI6ImZiOGY3NmE5Y2M5MWY0MjAzY2JmYjU3ZjYzOGM0ZmE2ZDQxYzAzNzE0OTk3NDE4YTY3ZjIxMzIxNTFkYjQ3MTMiLCJwYXNzIjp0cnVlLCJ0ZXN0cyI6eyJmYWlsZWQiOjAsInBhc3NlZCI6MX0sInRzIjoiMjAyNi0wNy0xMVQwMDozMzoyNC4xNDNaIn19LCJsZWRnZXIiOnsibGVuZ3RoIjo0LCJyb290IjoiMDBhNzYxYTA5ODgzYjU5MjBlYWY2Yzg5OTE2YmI1ZjVlZTAzNWY4NzM0YjJjOTU3YTk3Yzk3OTdlZTMzYTE5OCJ9LCJ0b29sIjp7Im5hbWUiOiJha2lzLWF0dGVzdCIsInZlcnNpb24iOiIwLjEuMCJ9fSwicHJlZGljYXRlVHlwZSI6Imh0dHBzOi8vb21lcnlhc2lyb25hbC5jb20vYWtpcy1hdHRlc3QvcHJlZGljYXRlL3YxIiwic3ViamVjdCI6W3siZGlnZXN0Ijp7ImdpdENvbW1pdCI6IjliOTM3ZDJkY2E5MDZlZTk0OTkxNjQ4YTU5ZTJhYjUyNjkxODUyZGIifSwibmFtZSI6ImFraXMtYXR0ZXN0In1dfQ==","signatures":[{"keyid":"759f9752322c192673b262a9d1c6eea5c6d479060583bd2cd84bfa26da96e240","sig":"WR4rJ8CyEnxzuqlWqxWqx2IG3iMQHrQpy6spcDTuW/jU8lMLxRyPhL7xkIvs9QemTg7DFBgOARF83GsPUn03Ag==","publicKeySpki":"MCowBQYDK2VwAyEAImyzfLzJ04jJ/GchijKbcGwT8k9VgOjvFj9pQSLwJ+A="}]},"ledger":[{"seq":1,"ts":"2026-07-11T00:33:22.480Z","kind":"init","gitSha":"9b937d2dca906ee94991648a59e2ab52691852db","dirty":false,"actor":"Ömer Yasir Önal \u003cengomeryasironal@gmail.com>","payload":{"keyFingerprint":"759f9752322c192673b262a9d1c6eea5c6d479060583bd2cd84bfa26da96e240","project":"akis-attest"},"prevHash":"0000000000000000000000000000000000000000000000000000000000000000","hash":"7ef2adfe0929bd11ea1a23191e11cc978c50df6be554a8c9f1502310cf5890c8"},{"seq":2,"ts":"2026-07-11T00:33:22.563Z","kind":"approve_plan","gitSha":"9b937d2dca906ee94991648a59e2ab52691852db","dirty":false,"actor":"Ömer Yasir Önal \u003cengomeryasironal@gmail.com>","payload":{"message":"Meta-showcase: attest the akis-attest v0.1.0 delivery with itself — 6-command CLI, hash-chained ledger, signed DSSE attestation, self-verifying proof page"},"prevHash":"7ef2adfe0929bd11ea1a23191e11cc978c50df6be554a8c9f1502310cf5890c8","hash":"aed39a3e3e05174b446aa9f088fd213862ea94fe843221824050de0e425195b7"},{"seq":3,"ts":"2026-07-11T00:33:24.143Z","kind":"verify","gitSha":"9b937d2dca906ee94991648a59e2ab52691852db","dirty":false,"actor":"Ömer Yasir Önal \u003cengomeryasironal@gmail.com>","payload":{"command":"pnpm test","exitCode":0,"durationMs":1506,"pass":true,"tests":{"passed":1,"failed":0},"outputDigest":"fb8f76a9cc91f4203cbfb57f638c4fa6d41c03714997418a67f2132151db4713","env":{"node":"v26.0.0","platform":"darwin","lockfileSha256":"88fc3dda4c03c85f24104c81febdf3602a0a758178c98e2ef29739cbdf0b1128"}},"prevHash":"aed39a3e3e05174b446aa9f088fd213862ea94fe843221824050de0e425195b7","hash":"88e49a6e31daa69974429282c69ed8024340dd41164c5f20cb325007bb218aca"},{"seq":4,"ts":"2026-07-11T00:33:24.217Z","kind":"approve_delivery","gitSha":"9b937d2dca906ee94991648a59e2ab52691852db","dirty":false,"actor":"Ömer Yasir Önal \u003cengomeryasironal@gmail.com>","payload":{"message":"v0.1.0 first dogfood delivery (head 9b937d2): 44 unit/integration tests really ran and passed","verifySeq":3},"prevHash":"88e49a6e31daa69974429282c69ed8024340dd41164c5f20cb325007bb218aca","hash":"00a761a09883b5920eaf6c89916bb5f5ee035f8734b2c957a97c9797ee33a198"}]}</script>
+<script id="attest-i18n" type="application/json">{"title":{"en":"Delivery proof","tr":"Teslimat kanıtı"},"verifying":{"en":"Verifying in your browser…","tr":"Tarayıcınızda doğrulanıyor…"},"verified":{"en":"Signature and ledger verified in your browser","tr":"İmza ve defter tarayıcınızda doğrulandı"},"failed":{"en":"VERIFICATION FAILED — do not trust this page","tr":"DOĞRULAMA BAŞARISIZ — bu sayfaya güvenmeyin"},"unsupported":{"en":"Your browser cannot verify Ed25519 — use the CLI check below","tr":"Tarayıcınız Ed25519 doğrulayamıyor — aşağıdaki CLI kontrolünü kullanın"},"draft":{"en":"DRAFT — GATES INCOMPLETE, UNSIGNED","tr":"TASLAK — KAPILAR TAMAMLANMADI, İMZASIZ"},"gates":{"en":"Approval gates","tr":"Onay kapıları"},"gatePlan":{"en":"Plan approved","tr":"Plan onaylandı"},"gateVerify":{"en":"Tests really ran","tr":"Testler gerçekten koştu"},"gateDelivery":{"en":"Delivery approved","tr":"Teslimat onaylandı"},"tests":{"en":"Test run","tr":"Test koşumu"},"env":{"en":"Environment","tr":"Ortam"},"fingerprint":{"en":"Signer key fingerprint","tr":"İmzacı anahtar parmak izi"},"fingerprintNote":{"en":"Compare this fingerprint with the one your contractor gave you through another channel.","tr":"Bu parmak izini, yükleniciden başka bir kanaldan aldığınız parmak iziyle karşılaştırın."},"honestyTitle":{"en":"What this proves — and what it does not","tr":"Bu neyi kanıtlar — neyi kanıtlamaz"},"proves1":{"en":"This ledger was produced by the holder of the key whose fingerprint is shown above, and has not been modified since signing.","tr":"Bu defter, yukarıdaki parmak izine sahip anahtarın sahibince üretildi ve imzadan sonra değiştirilmedi."},"proves2":{"en":"The recorded test command really ran and exited with the recorded result.","tr":"Kayıtlı test komutu gerçekten çalıştı ve kayıtlı sonuçla tamamlandı."},"proves3":{"en":"Each approval was recorded at the stated time against the stated git commit.","tr":"Her onay, belirtilen zamanda ve belirtilen git commit'ine karşı kaydedildi."},"not1":{"en":"That the key holder is who they claim to be — compare the fingerprint through a channel you trust.","tr":"Anahtar sahibinin iddia ettiği kişi olduğunu — parmak izini güvendiğiniz bir kanaldan karşılaştırın."},"not2":{"en":"That the tests are meaningful or complete.","tr":"Testlerin anlamlı veya eksiksiz olduğunu."},"not3":{"en":"Any third-party or independent endorsement (v1 signatures are self-issued).","tr":"Herhangi bir üçüncü taraf veya bağımsız onayı (v1 imzaları öz-imzalıdır)."},"checkTitle":{"en":"Verify independently","tr":"Bağımsız doğrulayın"},"checkBody":{"en":"Skeptical? Run this against this very file:","tr":"Şüpheci misiniz? Bu komutu bu dosyanın kendisi üzerinde çalıştırın:"}}</script>
+<script>
+const bundle = JSON.parse(document.getElementById('attest-bundle').textContent)
+const STRINGS = JSON.parse(document.getElementById('attest-i18n').textContent)
+let lang = bundle.lang
+function applyI18n() {
+  document.documentElement.lang = lang
+  for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = STRINGS[el.dataset.i18n][lang]
+  const badge = document.getElementById('badge')
+  const state = document.body.dataset.verifyState
+  const key = { ok: 'verified', fail: 'failed', unsupported: 'unsupported', draft: 'draft', pending: 'verifying' }[state]
+  badge.dataset.i18n = key
+  badge.textContent = STRINGS[key][lang]
+}
+document.getElementById('lang-toggle').addEventListener('click', () => { lang = lang === 'en' ? 'tr' : 'en'; applyI18n() })
+
+const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0))
+function canonicalJson(v) {
+  if (v === null || typeof v === 'number' || typeof v === 'boolean' || typeof v === 'string') return JSON.stringify(v)
+  if (Array.isArray(v)) return '[' + v.map(canonicalJson).join(',') + ']'
+  return '{' + Object.keys(v).sort().map((k) => JSON.stringify(k) + ':' + canonicalJson(v[k])).join(',') + '}'
+}
+async function sha256Hex(text) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+  return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+function pae(type, payload) {
+  const t = new TextEncoder().encode(type)
+  const h = new TextEncoder().encode('DSSEv1 ' + t.length + ' ' + type + ' ' + payload.length + ' ')
+  const out = new Uint8Array(h.length + payload.length); out.set(h); out.set(payload, h.length); return out
+}
+async function verifyChain(events) {
+  let prev = '0'.repeat(64)
+  for (const e of events) {
+    const { hash, ...rest } = e
+    if (e.prevHash !== prev) return false
+    if (await sha256Hex(canonicalJson(rest)) !== hash) return false
+    prev = hash
+  }
+  return true
+}
+// A known-good Ed25519 SPKI used ONLY to feature-detect browser support. Public,
+// throwaway material with zero secret value — it verifies nothing; the proof's real
+// key is imported afterwards, where a failure means tamper, not browser age.
+const ED25519_PROBE_SPKI = 'MCowBQYDK2VwAyEA2OFLhFX7PLUIsdktf8yUmv5ACswlws3SNDhjRQ0A040='
+async function verifyAll() {
+  if (bundle.draft) { document.body.dataset.verifyState = 'draft'; applyI18n(); render(); return }
+  try {
+    // Feature-detect FIRST with the constant key: only THIS failing means the
+    // browser is too old (no Ed25519 in WebCrypto / no crypto.subtle at all).
+    await crypto.subtle.importKey('spki', b64(ED25519_PROBE_SPKI), { name: 'Ed25519' }, false, ['verify'])
+  } catch (e) {
+    document.body.dataset.verifyState = 'unsupported'
+    applyI18n()
+    return
+  }
+  try {
+    const sig = bundle.envelope.signatures[0]
+    const key = await crypto.subtle.importKey('spki', b64(sig.publicKeySpki), { name: 'Ed25519' }, false, ['verify'])
+    const payload = b64(bundle.envelope.payload)
+    const sigOk = await crypto.subtle.verify('Ed25519', key, b64(sig.sig), pae(bundle.envelope.payloadType, payload))
+    const statement = JSON.parse(new TextDecoder().decode(payload))
+    const chainOk = await verifyChain(bundle.ledger)
+    const rootOk = bundle.ledger.length > 0 && statement.predicate.ledger.root === bundle.ledger[bundle.ledger.length - 1].hash
+    document.body.dataset.verifyState = sigOk && chainOk && rootOk ? 'ok' : 'fail'
+    document.getElementById('fingerprint').textContent = sig.keyid
+    render(statement)
+  } catch (e) {
+    // Ed25519 support is proven above: any exception here — including a corrupted
+    // embedded key — is a bad proof, never an old browser.
+    document.body.dataset.verifyState = 'fail'
+  }
+  applyI18n()
+}
+function render(statement) {
+  const gates = document.getElementById('gates')
+  const rows = []
+  for (const e of bundle.ledger) {
+    if (e.kind === 'approve_plan') rows.push([STRINGS.gatePlan[lang], e.ts, e.actor, e.payload.message ?? ''])
+    if (e.kind === 'verify') rows.push([STRINGS.gateVerify[lang], e.ts, e.actor, e.payload.pass ? 'PASS' : 'FAIL'])
+    if (e.kind === 'approve_delivery') rows.push([STRINGS.gateDelivery[lang], e.ts, e.actor, e.payload.message ?? ''])
+  }
+  gates.innerHTML = '<table>' + rows.map((r) => '<tr>' + r.map((c) => '<td>' + String(c).replace(/</g, '&lt;') + '</td>').join('') + '</tr>').join('') + '</table>'
+  if (statement) {
+    const v = statement.predicate.gates.verify
+    document.getElementById('tests').innerHTML =
+      '<p><code>' + String(v.command).replace(/</g, '&lt;') + '</code> — ' +
+      (v.tests === 'unparsed' ? 'exit ' + v.exitCode : v.tests.passed + ' passed, ' + v.tests.failed + ' failed') +
+      ' (' + v.durationMs + 'ms, node ' + v.env.node + ', ' + v.env.platform + ')</p>'
+  }
+}
+applyI18n(); verifyAll()
+</script>
+</body>
+</html>

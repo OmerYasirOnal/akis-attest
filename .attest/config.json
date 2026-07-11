@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "project": "akis-attest",
+  "actor": "Ömer Yasir Önal <engomeryasironal@gmail.com>",
+  "test": {
+    "command": "pnpm test"
+  }
+}
