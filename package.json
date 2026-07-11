@@ -5,12 +5,12 @@
   "type": "module",
   "license": "Apache-2.0",
   "engines": { "node": ">=22" },
-  "bin": { "attest": "./dist/cli.js" },
+  "bin": { "attest": "dist/cli.js" },
   "files": ["dist"],
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && chmod +x dist/cli.js",
     "prepublishOnly": "pnpm build",
     "e2e": "pnpm build && playwright test"
   },

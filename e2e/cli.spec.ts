@@ -9,8 +9,8 @@ import { expect, test } from '@playwright/test'
 const CLI = join(process.cwd(), 'dist/cli.js')
 
 function makeBinSymlink(): string {
-  // dist/cli.js is rebuilt by `pnpm e2e` (tsc emits mode 644) — make it executable so the
-  // shebang path is what actually runs, exactly like npm's chmod on install.
+  // `build` chmods dist/cli.js itself now, but this test doesn't depend on that step
+  // having just run — it symlinks-and-execs the file directly, which needs +x regardless.
   chmodSync(CLI, 0o755)
   const dir = mkdtempSync(join(tmpdir(), 'attest-bin-'))
   mkdirSync(join(dir, 'bin'))
