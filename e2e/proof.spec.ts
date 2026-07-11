@@ -63,3 +63,17 @@ test('a corrupted (non-JSON) payload reads as FAIL, not "unsupported browser"', 
   await page.goto(`file://${corrupted}`)
   await expect(page.locator('body')).toHaveAttribute('data-verify-state', 'fail', { timeout: 10_000 })
 })
+
+test('a corrupted embedded public key reads as FAIL, not "unsupported browser"', async ({ page }) => {
+  const proofPath = buildProof()
+  const badKey = proofPath.replace('proof.html', 'badkey.html')
+  const html = readFileSync(proofPath, 'utf8')
+  // Replace the envelope's publicKeySpki with valid-base64 garbage: importing the
+  // EMBEDDED key now throws, which is tampered proof material (fail) — browser
+  // support is feature-detected separately, with a known-good constant key.
+  const replaced = html.replace(/"publicKeySpki":"[^"]*"/, '"publicKeySpki":"Z2FyYmFnZQ=="')
+  expect(replaced).not.toBe(html)
+  writeFileSync(badKey, replaced)
+  await page.goto(`file://${badKey}`)
+  await expect(page.locator('body')).toHaveAttribute('data-verify-state', 'fail', { timeout: 10_000 })
+})

@@ -95,21 +95,24 @@ async function verifyChain(events) {
   }
   return true
 }
+// A known-good Ed25519 SPKI used ONLY to feature-detect browser support. Public,
+// throwaway material with zero secret value — it verifies nothing; the proof's real
+// key is imported afterwards, where a failure means tamper, not browser age.
+const ED25519_PROBE_SPKI = 'MCowBQYDK2VwAyEA2OFLhFX7PLUIsdktf8yUmv5ACswlws3SNDhjRQ0A040='
 async function verifyAll() {
   if (bundle.draft) { document.body.dataset.verifyState = 'draft'; applyI18n(); render(); return }
   try {
+    // Feature-detect FIRST with the constant key: only THIS failing means the
+    // browser is too old (no Ed25519 in WebCrypto / no crypto.subtle at all).
+    await crypto.subtle.importKey('spki', b64(ED25519_PROBE_SPKI), { name: 'Ed25519' }, false, ['verify'])
+  } catch (e) {
+    document.body.dataset.verifyState = 'unsupported'
+    applyI18n()
+    return
+  }
+  try {
     const sig = bundle.envelope.signatures[0]
-    const keyBytes = b64(sig.publicKeySpki)
-    let key
-    try {
-      // Feature-detect FIRST: only a failed Ed25519 import of the real embedded key
-      // means the browser is too old. Everything after a successful import is tamper.
-      key = await crypto.subtle.importKey('spki', keyBytes, { name: 'Ed25519' }, false, ['verify'])
-    } catch (e) {
-      document.body.dataset.verifyState = 'unsupported'
-      applyI18n()
-      return
-    }
+    const key = await crypto.subtle.importKey('spki', b64(sig.publicKeySpki), { name: 'Ed25519' }, false, ['verify'])
     const payload = b64(bundle.envelope.payload)
     const sigOk = await crypto.subtle.verify('Ed25519', key, b64(sig.sig), pae(bundle.envelope.payloadType, payload))
     const statement = JSON.parse(new TextDecoder().decode(payload))
@@ -119,8 +122,8 @@ async function verifyAll() {
     document.getElementById('fingerprint').textContent = sig.keyid
     render(statement)
   } catch (e) {
-    // The key imported (or the bundle structure itself is broken): any exception here
-    // is a bad proof, not an old browser.
+    // Ed25519 support is proven above: any exception here — including a corrupted
+    // embedded key — is a bad proof, never an old browser.
     document.body.dataset.verifyState = 'fail'
   }
   applyI18n()
