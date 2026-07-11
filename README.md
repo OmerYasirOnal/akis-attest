@@ -84,7 +84,7 @@ pnpm e2e          # builds first, then browser E2E (Playwright)
 pnpm build        # compile to dist/
 ```
 
-`pnpm typecheck` runs `tsc --noEmit`. CI runs typecheck, tests, E2E, and build on every push and pull request.
+`pnpm typecheck` runs `tsc --noEmit`. CI runs typecheck, tests, E2E, and build on pushes to main and on pull requests.
 
 ## License
 

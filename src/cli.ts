@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { realpathSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { runApprove } from './commands/approve.js'
 import { runCheck } from './commands/check.js'
 import { runExport } from './commands/export.js'
@@ -34,7 +36,23 @@ export async function main(argv: string[]): Promise<number> {
   }
 }
 
-const invokedDirectly = process.argv[1]?.endsWith('cli.js') || process.argv[1]?.endsWith('cli.ts')
+// npm installs the bin as a SYMLINK named `attest` (node_modules/.bin/attest), so a
+// name-based argv[1] check silently no-ops there. Compare real paths instead: argv[1]
+// resolved through symlinks must be this very module.
+const entry = process.argv[1]
+let invokedDirectly = false
+if (entry !== undefined) {
+  try {
+    invokedDirectly = realpathSync(entry) === fileURLToPath(import.meta.url)
+  } catch {
+    invokedDirectly = false
+  }
+}
 if (invokedDirectly) {
-  main(process.argv.slice(2)).then((code) => process.exit(code))
+  main(process.argv.slice(2))
+    .then((code) => process.exit(code))
+    .catch((err: unknown) => {
+      console.error(`error: ${err instanceof Error ? err.message : String(err)}`)
+      process.exit(1)
+    })
 }

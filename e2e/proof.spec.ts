@@ -49,3 +49,17 @@ test('a tampered proof.html fails in the browser', async ({ page }) => {
   await page.goto(`file://${tampered}`)
   await expect(page.locator('body')).toHaveAttribute('data-verify-state', 'fail', { timeout: 10_000 })
 })
+
+test('a corrupted (non-JSON) payload reads as FAIL, not "unsupported browser"', async ({ page }) => {
+  const proofPath = buildProof()
+  const corrupted = proofPath.replace('proof.html', 'corrupted.html')
+  const html = readFileSync(proofPath, 'utf8')
+  // Replace the DSSE envelope's payload with base64 of "not-json": JSON.parse of the
+  // decoded payload throws, which must be reported as tamper (fail), never as an
+  // old-browser "unsupported" shrug.
+  const replaced = html.replace(/"payload":"[^"]*"/, '"payload":"bm90LWpzb24="')
+  expect(replaced).not.toBe(html)
+  writeFileSync(corrupted, replaced)
+  await page.goto(`file://${corrupted}`)
+  await expect(page.locator('body')).toHaveAttribute('data-verify-state', 'fail', { timeout: 10_000 })
+})

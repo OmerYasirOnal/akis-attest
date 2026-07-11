@@ -11,6 +11,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm build",
     "e2e": "pnpm build && playwright test"
   },
   "devDependencies": {

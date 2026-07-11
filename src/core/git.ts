@@ -21,7 +21,9 @@ export function isDirty(cwd: string): boolean {
   // every init/verify/approve) must never make the project read as "dirty" — dirtiness
   // is about the user's CODE state. The delivery gate (and the honesty `dirty` flag
   // recorded on each event) therefore excludes .attest/ from the working-tree check.
-  return git(cwd, 'status', '--porcelain', '--', '.', ':(exclude).attest') !== ''
+  // `:(top,...)` anchors the check at the repo ROOT so the whole tree is inspected even
+  // when cwd is a subdirectory (an exclude-only pathspec means "everything else").
+  return git(cwd, 'status', '--porcelain', '--', ':(top,exclude).attest') !== ''
 }
 
 export function gitUser(cwd: string): string {
